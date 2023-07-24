@@ -7,6 +7,7 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelBinarizer
 import streamlit as st
+from streamlit_option_menu import option_menu
 import re
 
 st.set_page_config(layout="wide")
@@ -17,8 +18,11 @@ st.write("""
 </div>
 """, unsafe_allow_html=True)
 
-tab1, tab2 = st.tabs(["PREDICT SELLING PRICE", "PREDICT STATUS"])
-with tab1:
+with st.sidebar:
+    selected = option_menu(None, ["PREDICT SELLING PRICE", "PREDICT STATUS"], 
+        icons=['bi bi-graph-up', 'bi bi-question-square'], menu_icon="cast", default_index=1)
+
+if selected == "PREDICT SELLING PRICE":
     # Define the possible values for the dropdown menus
     status_options = ['Won', 'Draft', 'To be approved', 'Lost', 'Not lost for AM', 'Wonderful', 'Revised', 'Offered',
                       'Offerable']
@@ -99,7 +103,20 @@ with tab1:
         new_pred = loaded_model.predict(new_sample1)[0]
         st.write('Predicted selling price: ', np.exp(new_pred))
 
-with tab2:
+if selected == "PREDICT STATUS":
+    # Define the possible values for the dropdown menus
+    status_options = ['Won', 'Draft', 'To be approved', 'Lost', 'Not lost for AM', 'Wonderful', 'Revised', 'Offered',
+                      'Offerable']
+    item_type_options = ['W', 'WI', 'S', 'Others', 'PL', 'IPL', 'SLAWR']
+    country_options = [28., 25., 30., 32., 38., 78., 27., 77., 113., 79., 26., 39., 40., 84., 80., 107., 89.]
+    application_options = [10., 41., 28., 59., 15., 4., 38., 56., 42., 26., 27., 19., 20., 66., 29., 22., 40., 25., 67.,
+                           79., 3., 99., 2., 5., 39., 69., 70., 65., 58., 68.]
+    product = ['611112', '611728', '628112', '628117', '628377', '640400', '640405', '640665',
+               '611993', '929423819', '1282007633', '1332077137', '164141591', '164336407',
+               '164337175', '1665572032', '1665572374', '1665584320', '1665584642', '1665584662',
+               '1668701376', '1668701698', '1668701718', '1668701725', '1670798778', '1671863738',
+               '1671876026', '1690738206', '1690738219', '1693867550', '1693867563', '1721130331', '1722207579']
+    
     with st.form("my_form1"):
         col1, col2, col3 = st.columns([5, 1, 5])
         with col1:
@@ -147,7 +164,7 @@ with tab2:
         # Predict the status for a new sample
         # 'quantity tons_log', 'selling_price_log','application', 'thickness_log', 'width','country','customer','product_ref']].values, X_ohe
         new_sample = np.array([[np.log(float(cquantity_tons)), np.log(float(cselling)), capplication,
-                                np.log(float(cthickness)), float(cwidth), ccountry, int(ccustomer), int(product_ref),
+                                np.log(float(cthickness)), float(cwidth), ccountry, int(ccustomer), int(cproduct_ref),
                                 citem_type]])
         new_sample_ohe = ct_loaded.transform(new_sample[:, [8]]).toarray()
         new_sample = np.concatenate((new_sample[:, [0, 1, 2, 3, 4, 5, 6, 7]], new_sample_ohe), axis=1)
